@@ -1,8 +1,0 @@
-spoon.reflect.visitor.EarlyTerminatingScanner.scan(spoon.reflect.path.CtRole, java.util.Collection<? extends spoon.reflect.declaration.CtElement>),spoon.reflect.visitor.EarlyTerminatingScanner.isTerminated(),{}
-spoon.reflect.visitor.EarlyTerminatingScanner.scan(spoon.reflect.path.CtRole, java.util.Collection<? extends spoon.reflect.declaration.CtElement>),spoon.reflect.visitor.EarlyTerminatingScanner.scan(spoon.reflect.path.CtRole, spoon.reflect.declaration.CtElement),{}
-spoon.reflect.visitor.EarlyTerminatingScanner.scan(spoon.reflect.path.CtRole, java.util.Collection<? extends spoon.reflect.declaration.CtElement>),spoon.reflect.visitor.EarlyTerminatingScanner.scan(spoon.reflect.path.CtRole, java.util.Collection<? extends spoon.reflect.declaration.CtElement>)?e@81.17:81.18,{}
-spoon.reflect.visitor.EarlyTerminatingScanner.isTerminated(),spoon.reflect.visitor.EarlyTerminatingScanner?terminate@32.17:32.26,{}
-spoon.reflect.visitor.EarlyTerminatingScanner.scan(spoon.reflect.path.CtRole, spoon.reflect.declaration.CtElement),spoon.reflect.visitor.CtScanner.scan(spoon.reflect.path.CtRole, spoon.reflect.declaration.CtElement),{}
-spoon.reflect.visitor.EarlyTerminatingScanner.scan(spoon.reflect.path.CtRole, spoon.reflect.declaration.CtElement),spoon.reflect.visitor.EarlyTerminatingScanner?scannedRole@35.18:35.29,{}
-spoon.reflect.visitor.CtScanner.scan(spoon.reflect.path.CtRole, spoon.reflect.declaration.CtElement),spoon.reflect.visitor.CtScanner.scan(spoon.reflect.declaration.CtElement),{}
-spoon.reflect.visitor.CtScanner.scan(spoon.reflect.declaration.CtElement),spoon.reflect.visitor.CtVisitable.accept(spoon.reflect.visitor.CtVisitor),{}
