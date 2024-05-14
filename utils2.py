@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats
 import copy
+from scipy.stats import shapiro
 
 def main():
     pass
@@ -137,9 +138,12 @@ def aggregate_joular_node_entity_by_value(repo_name:str, min_nb_values:int):
     ])
     return [doc for doc in cursor]
 
-# --------
-# OUTLIERS
-# --------
+def mean_dict(data):
+    return [np.mean(d["values"]) for d in data]
+
+# --------------------------------
+# OUTLIERS AND NORMAL DISTRIBUTION
+# --------------------------------
 
 def removeOutliers(data):
     print("Len with outliers : ", len(data))
@@ -169,6 +173,19 @@ def removeOutliersByZScore(allValues, threshold=3):
         print(str(allValues[i]) + "   " + str(zScores[i]) + "  " + str(boolScore[i]))"""
     return allValues[zScores < threshold].tolist()
 
+def removeNonNormalData(data:list):
+    normal_data = []
+    for document in data:
+        values = document["values"]
+        stat, p = shapiro(values)
+        if (p > 0.05):
+            normal_data.append(document)
+    print("Number of normal distributions : ", len(normal_data))
+    return normal_data
+
+def filter_highest_data(data, means, highest_percentage=25):
+    quantile = np.percentile(means, np.abs(100-highest_percentage))
+    return [d for d,mean in zip(data, means) if mean >= quantile]
 
 # ----
 # PLOT
@@ -211,7 +228,7 @@ def violin_and_boxplot(data:list, labels=None, ylabel="Values", save_path=None):
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
     if labels:
-        ax.set_xticklabels(labels)
+        ax.set_xticklabels(labels, rotation=90, ha='left')
     ax.set_ylabel(ylabel)  # Update ylabel as per your data
 
     plt.show()
