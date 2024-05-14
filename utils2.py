@@ -63,6 +63,9 @@ def aggregate_joular_node_entity_by_value(repo_name:str, min_nb_values:int):
                 }, 
                 'iteration': {
                     '$first': '$iteration'
+                },
+                'id': {
+                    '$first': '$_id'
                 }
             }
         }, {
@@ -103,6 +106,9 @@ def aggregate_joular_node_entity_by_value(repo_name:str, min_nb_values:int):
                 }, 
                 'parent': {
                     '$first': '$parent'
+                },
+                'id': {
+                    '$first': '$id'
                 }
             }
         }, {
@@ -126,7 +132,8 @@ def aggregate_joular_node_entity_by_value(repo_name:str, min_nb_values:int):
                 'ancestors': '$ancestors', 
                 'parent': '$parent', 
                 'nbValues': '$nbValues', 
-                'nbIterations': '$nbIterations'
+                'nbIterations': '$nbIterations',
+                'id':1
             }
         }, {
             '$match': {
@@ -137,6 +144,20 @@ def aggregate_joular_node_entity_by_value(repo_name:str, min_nb_values:int):
         }
     ])
     return [doc for doc in cursor]
+
+def get_ancestors_from_joular_node_entity_id(id:str):
+    client = MongoClient('mongodb://localhost:27017/')
+    db = client['sentinelBackend']
+    collection = db['joular_node_entity']
+
+    doc = collection.find_one({"_id":id},{"_id":0, "ancestors":1})
+    if (doc["ancestors"] != []):
+        ancestor_ids = doc["ancestors"]
+        ancestors = collection.find({"_id": {"$in":ancestor_ids}},{"_id":0, "measurableElement.classMethodSignature":1, "lineNumber":1})
+        for ancestor in ancestors:
+            print(f'{ancestor["measurableElement"]["classMethodSignature"]} {ancestor["lineNumber"]}')
+    else:
+        print("There are no ancestors :/")
 
 def mean_dict(data):
     return [np.mean(d["values"]) for d in data]
