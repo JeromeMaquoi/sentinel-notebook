@@ -24,6 +24,10 @@ def read_json_file(file_path:str):
 
     return pd.DataFrame(json_data)
 
+# ------------------------------------
+# DATABASE DATA FETCHING / AGGREGATION
+# ------------------------------------
+
 def aggregate_joular_node_entity_by_value(repo_name:str, min_nb_values:int):
     client = MongoClient('mongodb://localhost:27017/')
     cursor = client['sentinelBackend']['joular_node_entity'].aggregate([
@@ -150,17 +154,30 @@ def get_ancestors_from_joular_node_entity_id(id:str):
     db = client['sentinelBackend']
     collection = db['joular_node_entity']
 
-    doc = collection.find_one({"_id":id},{"_id":0, "ancestors":1})
+    doc = collection.find_one({"_id":id})
     if (doc["ancestors"] != []):
         ancestor_ids = doc["ancestors"]
-        ancestors = collection.find({"_id": {"$in":ancestor_ids}},{"_id":0, "measurableElement.classMethodSignature":1, "lineNumber":1})
+        cursor = collection.find({"_id": {"$in":ancestor_ids}},{"_id":1, "measurableElement.classMethodSignature":1, "lineNumber":1})
+        ancestors = sort_entities_by_id_list(doc["ancestors"], cursor)
         for ancestor in ancestors:
             print(f'{ancestor["measurableElement"]["classMethodSignature"]} {ancestor["lineNumber"]}')
     else:
         print("There are no ancestors :/")
+    print(doc["measurableElement"]["classMethodSignature"] + " " + str(doc["lineNumber"]))
+    print()
 
-def mean_dict(data):
-    return [np.mean(d["values"]) for d in data]
+
+# -------------
+# LISTS METHODS
+# -------------
+
+def sort_entities_by_id_list(id_list:list, cursor):
+    """
+    The ancestors of one entity are sorted from the most distant ancestor to the closest one. The first element of the list will be the farthest ancestor and the last element will be the direct parent.
+    """
+    documents_by_id = {doc['_id']: doc for doc in cursor}
+    return [documents_by_id[id] for id in id_list if id in documents_by_id]
+
 
 # --------------------------------
 # OUTLIERS AND NORMAL DISTRIBUTION
@@ -208,11 +225,14 @@ def filter_highest_data(data, means, highest_percentage=25):
     quantile = np.percentile(means, np.abs(100-highest_percentage))
     return [d for d,mean in zip(data, means) if mean >= quantile]
 
+def mean_dict(data):
+    return [np.mean(d["values"]) for d in data]
+
 # ----
 # PLOT
 # ----
 
-def violin_and_boxplot(data:list, labels=None, ylabel="Values", save_path=None):
+def violin_and_boxplot(data:list, labels=None, ylabel="Energy Consumption (J)", save_path=None, bottom=None, height=6, width=8):
     """
     Create a combined violin and box plot for the given data.
     
@@ -221,8 +241,11 @@ def violin_and_boxplot(data:list, labels=None, ylabel="Values", save_path=None):
     - labels: List of labels for the x-axis corresponding to the data categories/documents.
     - ylabel: Label for the y-axis.
     - save_path: Path to save the plot as a file (optional).
+    - bottom: Minimum y-axis limit.
+    - height: Height of the plot.
+    - width: Width of the plot.
     """
-    fig, ax = plt.subplots(figsize=(8,6))
+    fig, ax = plt.subplots(figsize=(height,width))
     violins = ax.violinplot(
         data,
         showextrema=False
@@ -251,5 +274,12 @@ def violin_and_boxplot(data:list, labels=None, ylabel="Values", save_path=None):
     if labels:
         ax.set_xticklabels(labels, rotation=90, ha='left')
     ax.set_ylabel(ylabel)  # Update ylabel as per your data
+    if bottom != None:
+        ax.set_ylim(bottom=bottom)
+
+    plt.tight_layout()
+
+    if save_path:
+        plt.savefig("/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-notebook/plots/" + save_path + ".jpg", bbox_inches='tight')
 
     plt.show()
