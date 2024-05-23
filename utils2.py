@@ -28,12 +28,17 @@ def read_json_file(file_path:str):
 # DATABASE DATA FETCHING / AGGREGATION
 # ------------------------------------
 
-def aggregate_joular_node_entity_by_value(repo_name:str, min_nb_values:int):
+def aggregate_joular_node_entity_by_value(repo_name:str, min_nb_values:int, excluded_words:str=" "):
     client = MongoClient('mongodb://localhost:27017/')
     cursor = client['sentinelBackend']['joular_node_entity'].aggregate([
         {
             '$match': {
-                'commit.repository.name': repo_name
+                'commit.repository.name': repo_name,
+                'measurableElement.className':{
+                    '$not': {
+                        '$regex': excluded_words
+                    }
+                }
             }
         }, {
             '$group': {
@@ -147,7 +152,9 @@ def aggregate_joular_node_entity_by_value(repo_name:str, min_nb_values:int):
             }
         }
     ])
-    return [doc for doc in cursor]
+    result = [doc for doc in cursor]
+    print(f'Number of documents : {len(result)}')
+    return result
 
 def get_ancestors_from_joular_node_entity_id(id:str):
     client = MongoClient('mongodb://localhost:27017/')
@@ -232,7 +239,7 @@ def mean_dict(data):
 # PLOT
 # ----
 
-def violin_and_boxplot(data:list, labels=None, ylabel="Energy Consumption (J)", save_path=None, bottom=None, height=6, width=8):
+def violin_and_boxplot(data:list, labels=None, ylabel="Energy Consumption (J)", save_path=None, bottom=None, height=5, width=8):
     """
     Create a combined violin and box plot for the given data.
     
@@ -245,41 +252,47 @@ def violin_and_boxplot(data:list, labels=None, ylabel="Energy Consumption (J)", 
     - height: Height of the plot.
     - width: Width of the plot.
     """
-    fig, ax = plt.subplots(figsize=(height,width))
-    violins = ax.violinplot(
-        data,
-        showextrema=False
-    )
 
-    # Customize violin plot aesthetics
-    for pc in violins["bodies"]:
-        pc.set_facecolor('white')
-        pc.set_edgecolor('black')
-        pc.set_linewidth(0.6)
-        pc.set_alpha(1)
+    def create_plot(ax):
+        violins = ax.violinplot(
+            data,
+            showextrema=False
+        )
 
-    # Create the boxplot
-    lineprops=dict(linewidth=0.5)
-    medianprops=dict(color='black')
-    ax.boxplot(
-        data,
-        whiskerprops=lineprops,
-        boxprops=lineprops,
-        medianprops=medianprops
-    )
+        # Customize violin plot aesthetics
+        for pc in violins["bodies"]:
+            pc.set_facecolor('white')
+            pc.set_edgecolor('black')
+            pc.set_linewidth(0.6)
+            pc.set_alpha(1)
 
-    # Customize plot style
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
-    if labels:
-        ax.set_xticklabels(labels, rotation=90, ha='left')
-    ax.set_ylabel(ylabel)  # Update ylabel as per your data
-    if bottom != None:
-        ax.set_ylim(bottom=bottom)
+        # Create the boxplot
+        lineprops=dict(linewidth=0.5)
+        medianprops=dict(color='black')
+        ax.boxplot(
+            data,
+            whiskerprops=lineprops,
+            boxprops=lineprops,
+            medianprops=medianprops
+        )
 
+        # Customize plot style
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        if labels:
+            ax.set_xticklabels(labels, rotation=90, ha='left')
+        ax.set_ylabel(ylabel)  # Update ylabel as per your data
+        if bottom != None:
+            ax.set_ylim(bottom=bottom)
+
+    fig, ax = plt.subplots(figsize=(width,height))
+    create_plot(ax)
     plt.tight_layout()
+    plt.show()
 
     if save_path:
-        plt.savefig("/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-notebook/plots/" + save_path + ".jpg", bbox_inches='tight')
+        fig_save, ax_save = plt.subplots(figsize=(2,3))
+        create_plot(ax_save)
 
-    plt.show()
+        plt.savefig("/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-notebook/plots/" + save_path + ".jpg", bbox_inches='tight', dpi=300)
+        plt.close(fig_save)
