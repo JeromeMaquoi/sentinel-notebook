@@ -333,6 +333,9 @@ def filter_lowest_data(data, means, lowest_percentage=10):
 def mean_dict(data):
     return [np.mean(d["values"]) for d in data]
 
+def get_median(data:list):
+    return statistics.median(data)
+
 # ----
 # PLOT
 # ----
@@ -358,6 +361,8 @@ def plot_quantile_data(all_normal_data_without_outliers, percentage_quantile:int
 
     for doc in quantile:
         get_call_trace_from_joular_node_entity_id(doc["id"])
+        median = get_median(doc["values"])
+        print("Median : ", round(median, 2))
         if save:
             label = f'{doc["measurableElement"]["classMethodSignature"]} {doc["lineNumber"]}'
             violin_and_boxplot(doc["values"], bottom=0, height=3, width=2, save_path=label)
