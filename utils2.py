@@ -285,8 +285,8 @@ def removeOutliers(data):
     for methodData in data:
         methodDataCopy = copy.deepcopy(methodData)
         allValues = methodDataCopy["values"]
-        #allValuesAfterStd = removeOutliersByStd(allValues)
-        allValuesAfterOutlierRemoval = removeOutliersByZScore(allValues)
+        allValuesAfterOutlierRemoval = removeOutliersByStd(allValues)
+        #allValuesAfterOutlierRemoval = removeOutliersByZScore(allValues)
         if (len(allValuesAfterOutlierRemoval) >= 25):
             methodDataCopy["values"] = allValuesAfterOutlierRemoval
             only25ValuesAndMore.append(methodDataCopy)
