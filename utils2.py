@@ -349,7 +349,7 @@ def scatter_plot(df:pd.DataFrame):
     fig.show()
 
 
-def plot_quantile_data(all_normal_data_without_outliers, percentage_quantile:int, highest:bool, save:bool):
+def plot_quantile_data(all_normal_data_without_outliers, percentage_quantile:int, highest:bool, save:bool, begin_label:int):
     all_project_means = mean_dict(all_normal_data_without_outliers)
     #violin_and_boxplot(all_project_means)
     if highest:
@@ -357,8 +357,14 @@ def plot_quantile_data(all_normal_data_without_outliers, percentage_quantile:int
     else:
         quantile = filter_lowest_data(all_normal_data_without_outliers, all_project_means, percentage_quantile)
     first_quartile_values = [doc["values"] for doc in quantile]
-    labels = [doc["measurableElement"]["classMethodSignature"] + " " + str(doc["lineNumber"]) for doc in quantile]
+    #labels = [doc["measurableElement"]["classMethodSignature"] + " " + str(doc["lineNumber"]) for doc in quantile]
+    labels = ["CT " + str(i) for i in range(begin_label, begin_label+5)]
 
+    #plot_one_call_trace(save, quantile)
+
+    violin_and_boxplot(first_quartile_values, labels=labels, bottom=0)
+
+def plot_one_call_trace(save, quantile):
     for doc in quantile:
         get_call_trace_from_joular_node_entity_id(doc["id"])
         median = get_median(doc["values"])
@@ -369,8 +375,6 @@ def plot_quantile_data(all_normal_data_without_outliers, percentage_quantile:int
         else:
             violin_and_boxplot(doc["values"], bottom=0, height=3, width=2)
         print("=========================================================")
-
-    violin_and_boxplot(first_quartile_values, labels=labels, bottom=0)
 
 
 def violin_and_boxplot(data:list, labels=None, ylabel="Energy Consumption (J)", save_path=None, bottom=None, height=5, width=8):
@@ -409,6 +413,9 @@ def violin_and_boxplot(data:list, labels=None, ylabel="Energy Consumption (J)", 
             boxprops=lineprops,
             medianprops=medianprops
         )
+
+        means = [np.mean(category) for category in data]
+        ax.scatter(range(1, len(data) + 1), means, color='black', marker="x", s=30, label='Mean', zorder=3)
 
         # Customize plot style
         ax.spines['right'].set_visible(False)
