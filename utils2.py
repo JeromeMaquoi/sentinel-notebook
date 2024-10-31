@@ -349,20 +349,26 @@ def scatter_plot(df:pd.DataFrame):
     fig.show()
 
 
-def plot_quantile_data(all_normal_data_without_outliers, percentage_quantile:int, highest:bool, save:bool, begin_label:int):
+def plot_quantile_data(project_name:str, all_normal_data_without_outliers, percentage_quantile:int, highest:bool, save:bool, begin_label:int):
     all_project_means = mean_dict(all_normal_data_without_outliers)
+    label_plot = None
     #violin_and_boxplot(all_project_means)
     if highest:
         quantile = filter_highest_data(all_normal_data_without_outliers, all_project_means, percentage_quantile)
+        if save:
+            label_plot = f'Highest CT {project_name}'
+
     else:
         quantile = filter_lowest_data(all_normal_data_without_outliers, all_project_means, percentage_quantile)
+        if save:
+            label_plot = f'Lowest CT {project_name}'
     first_quartile_values = [doc["values"] for doc in quantile]
     #labels = [doc["measurableElement"]["classMethodSignature"] + " " + str(doc["lineNumber"]) for doc in quantile]
-    labels = ["CT " + str(i) for i in range(begin_label, begin_label+5)]
+    labels = ["CT" + str(i) for i in range(begin_label, begin_label+5)]
 
     #plot_one_call_trace(save, quantile)
 
-    violin_and_boxplot(first_quartile_values, labels=labels, bottom=0)
+    violin_and_boxplot(first_quartile_values, labels=labels, bottom=0, save_path=label_plot)
 
 def plot_one_call_trace(save, quantile):
     for doc in quantile:
@@ -411,7 +417,8 @@ def violin_and_boxplot(data:list, labels=None, ylabel="Energy Consumption (J)", 
             data,
             whiskerprops=lineprops,
             boxprops=lineprops,
-            medianprops=medianprops
+            medianprops=medianprops,
+            widths=0.3
         )
 
         means = [np.mean(category) for category in data]
@@ -421,7 +428,7 @@ def violin_and_boxplot(data:list, labels=None, ylabel="Energy Consumption (J)", 
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
         if labels:
-            ax.set_xticklabels(labels, rotation=90, ha='left')
+            ax.set_xticklabels(labels)
         ax.set_ylabel(ylabel)  # Update ylabel as per your data
         if bottom != None:
             ax.set_ylim(bottom=bottom)
@@ -432,7 +439,7 @@ def violin_and_boxplot(data:list, labels=None, ylabel="Energy Consumption (J)", 
     plt.show()
 
     if save_path:
-        fig_save, ax_save = plt.subplots(figsize=(2,3))
+        fig_save, ax_save = plt.subplots(figsize=(3,4))
         create_plot(ax_save)
 
         plt.savefig("/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-notebook/plots/" + save_path + ".jpg", bbox_inches='tight', dpi=300)
