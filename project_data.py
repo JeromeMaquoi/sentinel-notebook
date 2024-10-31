@@ -1,6 +1,7 @@
 import numpy as np
 import copy
 from utils2 import *
+from plotter import Plotter
 
 class ProjectData:
     def __init__(self, project_name, call_traces):
@@ -39,3 +40,35 @@ class ProjectData:
         print()
         self.call_traces = normal_data
         return self
+    
+    def get_means(self):
+        return [trace.mean for trace in self.call_traces]
+    
+    def filter_highest(self, percentage=25):
+        means = self.get_means()
+        quantile = np.percentile(means, np.abs(100-percentage))
+        filtered = [d for d,mean in zip(self.call_traces, means) if mean >= quantile]
+        return ProjectData(self.project_name, filtered)
+    
+    def filter_lowest(self, percentage=10):
+        means = self.get_means()
+        quantile = np.percentile(means, percentage)
+        filtered = [d for d,mean in zip(self.call_traces, means) if mean <= quantile]
+        return ProjectData(self.project_name, filtered)
+    
+    def plot_quantiles(self, highest:bool, save:bool, begin_label:int):
+        label_plot = f'{"Highest" if highest else "Lowest"} CT {self.project_name}' if save else None
+
+        # Assign labels to each CallTrace
+        for i, trace in enumerate(self.call_traces, start=begin_label):
+            trace.label = f'CT{i}'
+
+        labels = [trace.label for trace in self.call_traces]
+
+        Plotter.violin_and_boxplot(
+            data=[trace.values for trace in self.call_traces],
+            labels=labels,
+            ylabel="Energy Consumption (J)",
+            save_path=label_plot,
+            bottom=0
+        )

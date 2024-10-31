@@ -47,7 +47,7 @@ def get_all_data_from_one_repo(repo_name:str, min_nb_values:int, excluded_words:
     
     for trace in project_data.call_traces:
         print(trace)
-
+    return project_data
 
 # ------------------------------------
 # DATABASE DATA FETCHING / AGGREGATION
