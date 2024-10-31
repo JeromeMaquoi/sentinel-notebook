@@ -8,6 +8,14 @@ import copy
 from scipy.stats import shapiro
 import statistics
 import plotly.express as px
+import call_trace
+import project_data
+
+import importlib
+importlib.reload(call_trace)
+importlib.reload(project_data)
+from call_trace import CallTrace
+from project_data import ProjectData
 
 def main():
     pass
@@ -27,9 +35,18 @@ def read_json_file(file_path:str):
     return pd.DataFrame(json_data)
 
 def get_all_data_from_one_repo(repo_name:str, min_nb_values:int, excluded_words:str=" ", excluded_first_ancestor_class:str=" "):
+    #all_data = aggregate_joular_node_entity_by_value(repo_name=repo_name, min_nb_values=min_nb_values, excluded_words=excluded_words, excluded_first_ancestor_class=excluded_first_ancestor_class)
+    #all_data_without_outliers = removeOutliers(all_data)
+    #return removeNonNormalData(all_data_without_outliers)
+
     all_data = aggregate_joular_node_entity_by_value(repo_name=repo_name, min_nb_values=min_nb_values, excluded_words=excluded_words, excluded_first_ancestor_class=excluded_first_ancestor_class)
-    all_data_without_outliers = removeOutliers(all_data)
-    return removeNonNormalData(all_data_without_outliers)
+    call_traces = [CallTrace(values=doc["values"], class_method_signature=doc["measurableElement"].get("classMethodSignature", ""), line_number=doc.get("lineNumber")) for doc in all_data]
+
+    project_data = ProjectData(project_name=repo_name, call_traces=call_traces)
+    project_data.filter_outliers().filter_non_normal()
+    
+    for trace in project_data.call_traces:
+        print(trace)
 
 
 # ------------------------------------
