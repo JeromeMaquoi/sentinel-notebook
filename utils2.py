@@ -45,8 +45,6 @@ def get_all_data_from_one_repo(repo_name:str, min_nb_values:int, excluded_words:
     project_data = ProjectData(project_name=repo_name, call_traces=call_traces)
     project_data.filter_outliers().filter_non_normal()
     
-    for trace in project_data.call_traces:
-        print(trace)
     return project_data
 
 # ------------------------------------

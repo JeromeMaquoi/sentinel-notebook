@@ -1,14 +1,14 @@
 import matplotlib.pyplot as plt
-import numpy as np
 
 class Plotter:
     @staticmethod
-    def violin_and_boxplot(data:list, labels=None, ylabel="Energy Consumption (J)", save_path=None, bottom=None, height=5, width=8):
+    def violin_and_boxplot(project_data, ylabel="Energy Consumption (J)", save_path=None, bottom=None, height=5, width=8):
         """
         Create a combined violin and box plot for the given data.
         
         Parameters:
-        - data: List of lists, where each inner list contains the values for a particular category/document.
+        - project_data: ProjectData to be plotted
+        - means: List of means of each element of data
         - labels: List of labels for the x-axis corresponding to the data categories/documents.
         - ylabel: Label for the y-axis.
         - save_path: Path to save the plot as a file (optional).
@@ -17,7 +17,7 @@ class Plotter:
         - width: Width of the plot.
         """
 
-        def create_plot(ax):
+        def create_plot(ax, data:list, means:list, labels=None):
             violins = ax.violinplot(
                 data,
                 showextrema=False
@@ -41,7 +41,7 @@ class Plotter:
                 widths=0.3
             )
 
-            means = [np.mean(category) for category in data]
+            #means = [np.mean(category) for category in data]
             ax.scatter(range(1, len(data) + 1), means, color='black', marker="x", s=30, label='Mean', zorder=3)
 
             # Customize plot style
@@ -54,13 +54,16 @@ class Plotter:
                 ax.set_ylim(bottom=bottom)
 
         fig, ax = plt.subplots(figsize=(width,height))
-        create_plot(ax)
+        data = [trace.values for trace in project_data.call_traces]
+        means = [trace.mean for trace in project_data.call_traces]
+        labels = [trace.label for trace in project_data.call_traces]
+        create_plot(ax, data=data, means=means, labels=labels)
         plt.tight_layout()
         plt.show()
 
         if save_path:
             fig_save, ax_save = plt.subplots(figsize=(3,4))
-            create_plot(ax_save)
+            create_plot(ax_save, data)
 
             plt.savefig("/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-notebook/plots/" + save_path + ".jpg", bbox_inches='tight', dpi=300)
             plt.close(fig_save)

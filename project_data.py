@@ -4,7 +4,7 @@ from utils2 import *
 from plotter import Plotter
 
 class ProjectData:
-    def __init__(self, project_name, call_traces):
+    def __init__(self, project_name:str, call_traces):
         self.project_name = project_name
         self.call_traces = call_traces
 
@@ -63,11 +63,8 @@ class ProjectData:
         for i, trace in enumerate(self.call_traces, start=begin_label):
             trace.label = f'CT{i}'
 
-        labels = [trace.label for trace in self.call_traces]
-
         Plotter.violin_and_boxplot(
-            data=[trace.values for trace in self.call_traces],
-            labels=labels,
+            project_data=self,
             ylabel="Energy Consumption (J)",
             save_path=label_plot,
             bottom=0
