@@ -19,7 +19,7 @@ class ProjectData:
             allValuesAfterOutlierRemoval = removeOutliersByStd(allValues)
             #allValuesAfterOutlierRemoval = removeOutliersByZScore(allValues)
             if (len(allValuesAfterOutlierRemoval) >= 25):
-                methodDataCopy.values = allValuesAfterOutlierRemoval
+                methodDataCopy.set_values(allValuesAfterOutlierRemoval)
                 only25ValuesAndMore.append(methodDataCopy)
         print("Len without outliers (with at least 25 values) : ", len(only25ValuesAndMore))
         print()
