@@ -1,4 +1,5 @@
 import unittest
+from scipy.stats import norm
 from call_trace import CallTrace
 from project_data import ProjectData
 from utils2 import *
@@ -15,6 +16,14 @@ class TestProjectData(unittest.TestCase):
             project_name="test_project",
             call_traces=[self.trace1, self.trace2, self.trace3]
         )
+
+        self.normal_trace = CallTrace(values=norm.rvs(size=30, loc=10, scale=1).tolist())
+        self.non_normal_trace = CallTrace(values=[1, 1, 1, 1, 20, 30, 40])  # Skewed distribution
+        self.project_data2 = ProjectData(
+            project_name="TestProject",
+            call_traces=[self.normal_trace, self.non_normal_trace]
+        )
+
 
     def test_filter_outliers_removes_outliers(self):
         # Apply the filter_outliers method
@@ -62,6 +71,41 @@ class TestProjectData(unittest.TestCase):
         self.assertTrue(project_data.call_traces)
         # The trace should remain unchanged
         self.assertEqual(len(project_data.call_traces[0].values), 40)
+
+    def test_filter_non_normal(self):
+        self.project_data2.filter_non_normal()
+        self.assertEqual(len(self.project_data2.call_traces), 1)
+        self.assertEqual(self.project_data2.call_traces[0], self.normal_trace)
+
+    def test_filter_highest(self):
+        traces = [
+            CallTrace(values=np.random.normal(loc=5, scale=1, size=30).tolist()),
+            CallTrace(values=np.random.normal(loc=35, scale=1, size=30).tolist()),
+            CallTrace(values=np.random.normal(loc=10, scale=1, size=30).tolist()),
+            CallTrace(values=np.random.normal(loc=1, scale=1, size=30).tolist())
+        ]
+        project_data = ProjectData("TestProjectHigh", traces)
+
+        # Filter to keep top 25% by mean
+        filtered_data = project_data.filter_highest(percentage=25)
+        self.assertEqual(len(filtered_data.call_traces), 1)
+        self.assertTrue(all(trace.mean >= 30 for trace in filtered_data.call_traces))
+
+    def test_filter_lowest(self):
+        # Add additional CallTrace instances with different mean values
+        traces = [
+            CallTrace(values=np.random.normal(loc=5, scale=1, size=30).tolist()),  # Lower mean
+            CallTrace(values=np.random.normal(loc=15, scale=1, size=30).tolist()),  # Higher mean
+            CallTrace(values=np.random.normal(loc=10, scale=1, size=30).tolist())   # Middle mean
+        ]
+        project_data = ProjectData("TestProjectLow", traces)
+
+        # Filter to keep bottom 50% by mean
+        filtered_data = project_data.filter_lowest(percentage=10)
+
+        # Check that only the traces with lower means remain
+        self.assertEqual(len(filtered_data.call_traces), 1)
+        self.assertTrue(all(trace.mean <= 8 for trace in filtered_data.call_traces))
 
 if __name__ == "__main__":
     unittest.main()
