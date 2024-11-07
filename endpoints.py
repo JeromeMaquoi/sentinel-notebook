@@ -1,4 +1,4 @@
-import requests
+""" import requests
 
 BASE_URL = "http://localhost:8080/api/v1"
 
@@ -27,4 +27,4 @@ def getSeveralCkDataForOneMethod(commitSha: str, className: str, methodName: str
         "methodName": methodName,
         "names": ckMetrics
     }
-    return getEndpoint(endpoint=endpoint, params=params)
+    return getEndpoint(endpoint=endpoint, params=params) """

@@ -1,4 +1,4 @@
-import pandas as pd
+""" import pandas as pd
 import networkx as nx
 from sklearn.preprocessing import StandardScaler
 
@@ -7,27 +7,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-def exportDataframeToFile(df : pd.DataFrame, filePath : str):
-    df.to_csv(filePath, index=False)
-
-def exportDiGraphToCsv(graph : nx.DiGraph, filePath : str):
-    nx.write_edgelist(graph, filePath, delimiter=",")
-
-def export_graph_with_headers(graph: nx.DiGraph, filePath: str, delimiter:str = ','):
-    with open(filePath, 'w') as f:
-        f.write("Source,Target,Type\n")
-        for edge in graph.edges():
-            f.write(delimiter.join(map(str, edge)) + "\n")
-
-def get_subgraph_with_start_node(graph: nx.DiGraph, start_node: str):
-    return nx.dfs_tree(graph, source=start_node)
-
-def sortData(data):
-    return sorted(data, key=lambda x: x["allValues"], reverse=True)
-
-def getTheFirstHighestValues(data, end=5):
-    return data[:end]
 
 
 # -----------------------------
@@ -74,9 +53,6 @@ def getMetricValue(ckData):
 def removeOutliersByZScore(data, threshold=3):
     zScores = np.abs(stats.zscore(data))
     #zScores = np.abs((data - np.mean(data)) / np.std(data))
-    """boolScore = zScores < threshold
-    for i in range(len(data)):
-        print(str(data[i]) + "   " + str(zScores[i]) + "  " + str(boolScore[i]))"""
     return data[zScores < threshold]
 
 def removeOutliersByIQR(allValues):
@@ -84,11 +60,6 @@ def removeOutliersByIQR(allValues):
     Q1 = df.quantile(0.25)
     Q3 = df.quantile(0.75)
     IQR = Q3 - Q1
-    """print("Q1 = ", Q1["allValues"])
-    print("Q3 = ", Q3["allValues"])
-    print("IQR = ", IQR["allValues"])
-    print("Lower limit = ", Q1["allValues"] - 1.5 * IQR["allValues"])
-    print("Upper limit = ", Q3["allValues"] + 1.5 * IQR["allValues"])"""
     return df[~((df < (Q1 - 1.5 * IQR))|(df > (Q3 + 1.5 * IQR))).any(axis=1)]
 
 
@@ -124,4 +95,4 @@ def preprocessData(df):
 def createTsneResult(df, perplexity):
     X_scaled = preprocessData(df)
     tsne = TSNE(n_components=2, random_state=42, perplexity=perplexity)
-    return tsne.fit_transform(X_scaled)
+    return tsne.fit_transform(X_scaled) """

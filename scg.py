@@ -1,4 +1,4 @@
-import collections
+""" import collections
 import scg_pb2 as scg_pb
 import os
 import networkx as nx
@@ -276,3 +276,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+ """

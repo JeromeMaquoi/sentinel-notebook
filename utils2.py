@@ -1,11 +1,6 @@
 import pandas as pd
-import json
 from pymongo import MongoClient
-import matplotlib.pyplot as plt
 import numpy as np
-from scipy import stats
-import copy
-from scipy.stats import shapiro
 import statistics
 import plotly.express as px
 import call_trace
@@ -202,7 +197,7 @@ def aggregate_joular_node_entity_by_value(repo_name:str, min_nb_values:int, excl
     print()
     return result
 
-def get_call_trace_from_joular_node_entity_id(id:str):
+""" def get_call_trace_from_joular_node_entity_id(id:str):
     client = MongoClient('mongodb://localhost:27017/')
     db = client['sentinelBackend']
     collection = db['joular_node_entity']
@@ -222,9 +217,9 @@ def get_call_trace_from_joular_node_entity_id(id:str):
     call_trace.append(doc)
     print(doc["measurableElement"]["classMethodSignature"] + " " + str(doc["lineNumber"]))
     print()
-    return call_trace
+    return call_trace """
 
-def get_ck_metric_from_joular_node_entity(repo_name:str, class_name:str, method_name:str, name:str="fanout"):
+""" def get_ck_metric_from_joular_node_entity(repo_name:str, class_name:str, method_name:str, name:str="fanout"):
     client = MongoClient('mongodb://localhost:27017/')
     db = client['sentinelBackend']
     collection = db['ck_entity']
@@ -243,7 +238,7 @@ def get_sum_fanout_of_call_trace(repo_name:str, call_trace):
         fanout = get_ck_metric_from_joular_node_entity(repo_name=repo_name, class_name=class_name, method_name=method_name, name="fanout")
         sum_fanout += fanout
 
-    return sum_fanout
+    return sum_fanout """
 
 
 
@@ -251,27 +246,12 @@ def get_sum_fanout_of_call_trace(repo_name:str, call_trace):
 # LISTS METHODS
 # -------------
 
-def sort_entities_by_id_list(id_list:list, cursor):
-    """
-    The ancestors of one entity are sorted from the most distant ancestor to the closest one. The first element of the list will be the farthest ancestor and the last element will be the direct parent.
-    """
-    documents_by_id = {doc['_id']: doc for doc in cursor}
-    return [documents_by_id[id] for id in id_list if id in documents_by_id]
-
-def create_dataframe_metric_energy(all_normal_data_without_outliers, repo_name:str):
-    data = []
-
-    for item in all_normal_data_without_outliers:
-        median = statistics.median(item["values"])
-        call_trace = get_call_trace_from_joular_node_entity_id(item["id"])
-        sum_fanout = get_sum_fanout_of_call_trace(repo_name, call_trace)
-
-        data.append({
-            'energy_consumption_median': median,
-            'fanout':sum_fanout,
-            'identifier': item["measurableElement"]["methodName"]
-        })
-    return pd.DataFrame(data)
+#def sort_entities_by_id_list(id_list:list, cursor):
+    #"""
+    #The ancestors of one entity are sorted from the most distant ancestor to the closest #one. The first element of the list will be the farthest ancestor and the last element #will be the direct parent.
+    #"""
+    #documents_by_id = {doc['_id']: doc for doc in cursor}
+    #return [documents_by_id[id] for id in id_list if id in documents_by_id]
 
 # --------------------------------
 # OUTLIERS AND NORMAL DISTRIBUTION
@@ -281,18 +261,3 @@ def remove_outliers_by_std(all_values):
     mean = np.mean(all_values)
     std_dev = np.std(all_values)
     return [x for x in all_values if (np.abs(mean - x) <= 3 * std_dev)]
-
-def mean_dict(data):
-    return [np.mean(d["values"]) for d in data]
-
-# ----
-# PLOT
-# ----
-
-def scatter_plot(df:pd.DataFrame):
-    fig = px.scatter(df, x='energy_consumption_median', y='fanout', hover_data=['identifier'],
-                     labels={'energy_consumption': 'Energy Consumption (J)', 'fanout': 'Fanout'},
-                     title='Interactive Scatter Plot of Energy Consumption vs Fanout')
-    
-    # Show plot
-    fig.show()

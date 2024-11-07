@@ -2,6 +2,7 @@ import numpy as np
 import copy
 from utils2 import *
 from plotter import Plotter
+from scipy.stats import shapiro
 
 class ProjectData:
     def __init__(self, project_name:str, call_traces):
