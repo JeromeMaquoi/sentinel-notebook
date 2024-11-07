@@ -22,11 +22,11 @@ class TestProjectData(unittest.TestCase):
         
         # Verify that traces with outliers have fewer values after filtering
         # Original trace1 should lose its outliers
-        filtered_trace1_values = removeOutliersByStd(self.trace1.values)
+        filtered_trace1_values = remove_outliers_by_std(self.trace1.values)
         self.assertEqual(len(self.project_data.call_traces[0].values), len(filtered_trace1_values))
 
         # Original trace3 should also lose its outliers
-        filtered_trace3_values = removeOutliersByStd(self.trace3.values)
+        filtered_trace3_values = remove_outliers_by_std(self.trace3.values)
         self.assertEqual(len(self.project_data.call_traces[2].values), len(filtered_trace3_values))
 
     def test_filter_outliers_keeps_traces_with_at_least_25_values(self):

@@ -3,7 +3,6 @@ import numpy as np
 class CallTrace:
     def __init__(self, values, class_method_signature="", line_number=None):
         self.values = values
-        #self.id = id
         self.class_method_signature = class_method_signature
         self.line_number = line_number
         self.median = np.median(values)

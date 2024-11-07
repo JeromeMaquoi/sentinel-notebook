@@ -41,7 +41,6 @@ class Plotter:
                 widths=0.3
             )
 
-            #means = [np.mean(category) for category in data]
             ax.scatter(range(1, len(data) + 1), means, color='black', marker="x", s=30, label='Mean', zorder=3)
 
             # Customize plot style
@@ -53,7 +52,7 @@ class Plotter:
             if bottom != None:
                 ax.set_ylim(bottom=bottom)
 
-        fig, ax = plt.subplots(figsize=(width,height))
+        _, ax = plt.subplots(figsize=(width,height))
         data = [trace.values for trace in project_data.call_traces]
         means = [trace.mean for trace in project_data.call_traces]
         labels = [trace.label for trace in project_data.call_traces]

@@ -12,18 +12,17 @@ class ProjectData:
         print("---------------")
         print("Remove outliers")
         print("---------------")
-        only25ValuesAndMore = []
-        for methodData in self.call_traces:
-            methodDataCopy = copy.deepcopy(methodData)
-            allValues = methodDataCopy.values
-            allValuesAfterOutlierRemoval = removeOutliersByStd(allValues)
-            #allValuesAfterOutlierRemoval = removeOutliersByZScore(allValues)
-            if (len(allValuesAfterOutlierRemoval) >= 25):
-                methodDataCopy.set_values(allValuesAfterOutlierRemoval)
-                only25ValuesAndMore.append(methodDataCopy)
-        print("Len without outliers (with at least 25 values) : ", len(only25ValuesAndMore))
+        only_25_values_and_more = []
+        for method_data in self.call_traces:
+            method_data_copy = copy.deepcopy(method_data)
+            all_values = method_data_copy.values
+            all_values_after_outlier_removal = remove_outliers_by_std(all_values)
+            if (len(all_values_after_outlier_removal) >= 25):
+                method_data_copy.set_values(all_values_after_outlier_removal)
+                only_25_values_and_more.append(method_data_copy)
+        print("Len without outliers (with at least 25 values) : ", len(only_25_values_and_more))
         print()
-        self.call_traces = only25ValuesAndMore
+        self.call_traces = only_25_values_and_more
         return self
     
     def filter_non_normal(self):
@@ -33,7 +32,7 @@ class ProjectData:
         normal_data = []
         for document in self.call_traces:
             values = document.values
-            stat, p = shapiro(values)
+            _, p = shapiro(values)
             if (p > 0.05):
                 normal_data.append(document)
         print("Number of normal distributions : ", len(normal_data))
