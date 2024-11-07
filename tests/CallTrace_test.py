@@ -3,7 +3,7 @@ import numpy as np
 from call_trace import CallTrace
 from project_data import ProjectData
 
-class Test_CallTrace(unittest.TestCase):
+class TestCallTrace(unittest.TestCase):
     def test_call_trace_simple_initialization(self):
         values = [1, 2, 2, 3, 3, 3, 100, 101, 102]
         self.trace1 = CallTrace(values=values)
@@ -18,4 +18,5 @@ class Test_CallTrace(unittest.TestCase):
 
         self.project_data.filter_outliers()
 
+        self.assertTrue(self.project_data.call_traces) # check if the list is not empty
         self.assertEqual(1, self.project_data.call_traces[0].mean)

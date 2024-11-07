@@ -3,7 +3,7 @@ from call_trace import CallTrace
 from project_data import ProjectData
 from utils2 import *
 
-class Test_ProjectData(unittest.TestCase):
+class TestProjectData(unittest.TestCase):
     def setUp(self):
         # Sample data with outliers
         self.trace1 = CallTrace(values=[1, 2, 2, 3, 3, 3, 100, 101, 102] * 3)  # Contains outliers
@@ -59,6 +59,7 @@ class Test_ProjectData(unittest.TestCase):
         # Apply the filter_outliers method
         project_data.filter_outliers()
 
+        self.assertTrue(project_data.call_traces)
         # The trace should remain unchanged
         self.assertEqual(len(project_data.call_traces[0].values), 40)
 
