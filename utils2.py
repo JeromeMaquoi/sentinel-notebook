@@ -35,10 +35,6 @@ def read_json_file(file_path:str):
     return pd.DataFrame(json_data)
 
 def get_all_data_from_one_repo(repo_name:str, min_nb_values:int, excluded_words:str=" ", excluded_first_ancestor_class:str=" "):
-    #all_data = aggregate_joular_node_entity_by_value(repo_name=repo_name, min_nb_values=min_nb_values, excluded_words=excluded_words, excluded_first_ancestor_class=excluded_first_ancestor_class)
-    #all_data_without_outliers = removeOutliers(all_data)
-    #return removeNonNormalData(all_data_without_outliers)
-
     all_data = aggregate_joular_node_entity_by_value(repo_name=repo_name, min_nb_values=min_nb_values, excluded_words=excluded_words, excluded_first_ancestor_class=excluded_first_ancestor_class)
     call_traces = [CallTrace(values=doc["values"], class_method_signature=doc["measurableElement"].get("classMethodSignature", ""), line_number=doc.get("lineNumber")) for doc in all_data]
 
@@ -292,64 +288,18 @@ def create_dataframe_metric_energy(all_normal_data_without_outliers, repo_name:s
 # OUTLIERS AND NORMAL DISTRIBUTION
 # --------------------------------
 
-def removeOutliers(data):
-    print("---------------")
-    print("Remove outliers")
-    print("---------------")
-    only25ValuesAndMore = []
-    for methodData in data:
-        methodDataCopy = copy.deepcopy(methodData)
-        allValues = methodDataCopy["values"]
-        allValuesAfterOutlierRemoval = removeOutliersByStd(allValues)
-        #allValuesAfterOutlierRemoval = removeOutliersByZScore(allValues)
-        if (len(allValuesAfterOutlierRemoval) >= 25):
-            methodDataCopy["values"] = allValuesAfterOutlierRemoval
-            only25ValuesAndMore.append(methodDataCopy)
-    print("Len without outliers (with at least 25 values) : ", len(only25ValuesAndMore))
-    print()
-    return only25ValuesAndMore
+def remove_outliers_by_std(all_values):
+    mean = np.mean(all_values)
+    std_dev = np.std(all_values)
+    return [x for x in all_values if (np.abs(mean - x) <= 3 * std_dev)]
 
-def removeOutliersByStd(allValues):
-    mean = np.mean(allValues)
-    stdDev = np.std(allValues)
-    return [x for x in allValues if (np.abs(mean - x) <= 3 * stdDev)]
-
-def removeOutliersByZScore(allValues, threshold=3):
-    allValues = np.array(allValues)
-    zScores = np.abs(stats.zscore(allValues))
-    #zScores = np.abs((data - np.mean(data)) / np.std(data))
-    """boolScore = zScores < threshold
-    for i in range(len(allValues)):
-        print(str(allValues[i]) + "   " + str(zScores[i]) + "  " + str(boolScore[i]))"""
-    return allValues[zScores < threshold].tolist()
-
-def removeNonNormalData(data:list):
-    print("-----------------")
-    print("Shapiro-Wilk test")
-    print("-----------------")
-    normal_data = []
-    for document in data:
-        values = document["values"]
-        stat, p = shapiro(values)
-        if (p > 0.05):
-            normal_data.append(document)
-    print("Number of normal distributions : ", len(normal_data))
-    print()
-    return normal_data
-
-def filter_highest_data(data, means, highest_percentage=25):
-    quantile = np.percentile(means, np.abs(100-highest_percentage))
-    return [d for d,mean in zip(data, means) if mean >= quantile]
-
-def filter_lowest_data(data, means, lowest_percentage=10):
-    quantile = np.percentile(means, lowest_percentage)
-    return [d for d,mean in zip(data, means) if mean <= quantile]
+def remove_outliers_by_zscore(all_values, threshold=3):
+    all_values = np.array(all_values)
+    zscores = np.abs(stats.zscore(all_values))
+    return all_values[zscores < threshold].tolist()
 
 def mean_dict(data):
     return [np.mean(d["values"]) for d in data]
-
-def get_median(data:list):
-    return statistics.median(data)
 
 # ----
 # PLOT
@@ -362,40 +312,6 @@ def scatter_plot(df:pd.DataFrame):
     
     # Show plot
     fig.show()
-
-
-def plot_quantile_data(project_name:str, all_normal_data_without_outliers, percentage_quantile:int, highest:bool, save:bool, begin_label:int):
-    all_project_means = mean_dict(all_normal_data_without_outliers)
-    label_plot = None
-    #violin_and_boxplot(all_project_means)
-    if highest:
-        quantile = filter_highest_data(all_normal_data_without_outliers, all_project_means, percentage_quantile)
-        if save:
-            label_plot = f'Highest CT {project_name}'
-
-    else:
-        quantile = filter_lowest_data(all_normal_data_without_outliers, all_project_means, percentage_quantile)
-        if save:
-            label_plot = f'Lowest CT {project_name}'
-    first_quartile_values = [doc["values"] for doc in quantile]
-    #labels = [doc["measurableElement"]["classMethodSignature"] + " " + str(doc["lineNumber"]) for doc in quantile]
-    labels = ["CT" + str(i) for i in range(begin_label, begin_label+5)]
-
-    #plot_one_call_trace(save, quantile)
-
-    violin_and_boxplot(first_quartile_values, labels=labels, bottom=0, save_path=label_plot)
-
-def plot_one_call_trace(save, quantile):
-    for doc in quantile:
-        get_call_trace_from_joular_node_entity_id(doc["id"])
-        median = get_median(doc["values"])
-        print("Median : ", round(median, 2))
-        if save:
-            label = f'{doc["measurableElement"]["classMethodSignature"]} {doc["lineNumber"]}'
-            violin_and_boxplot(doc["values"], bottom=0, height=3, width=2, save_path=label)
-        else:
-            violin_and_boxplot(doc["values"], bottom=0, height=3, width=2)
-        print("=========================================================")
 
 
 def violin_and_boxplot(data:list, labels=None, ylabel="Energy Consumption (J)", save_path=None, bottom=None, height=5, width=8):
