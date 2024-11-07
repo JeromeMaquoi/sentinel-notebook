@@ -2,3 +2,5 @@
 .ipynb_checkpoints/Untitled-checkpoint.ipynb
 .ipynb_checkpoints/sentinel-notebook-checkpoint.ipynb
 __pycache__/
+/plots
+.vscode/settings.json
