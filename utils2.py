@@ -9,12 +9,6 @@ importlib.reload(project_data)
 from call_trace import CallTrace
 from project_data import ProjectData
 
-def main():
-    pass
-
-if __name__ == "__main__":
-    main()
-
 def get_all_data_from_one_repo(repo_name:str, min_nb_values:int, excluded_words:str=" ", excluded_first_ancestor_class:str=" "):
     all_data = aggregate_joular_node_entity_by_value(repo_name=repo_name, min_nb_values=min_nb_values, excluded_words=excluded_words, excluded_first_ancestor_class=excluded_first_ancestor_class)
     call_traces = [CallTrace(values=doc["values"], class_method_signature=doc["measurableElement"].get("classMethodSignature", ""), line_number=doc.get("lineNumber")) for doc in all_data]
