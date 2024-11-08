@@ -106,6 +106,3 @@ class TestProjectData(unittest.TestCase):
         # Check that only the traces with lower means remain
         self.assertEqual(len(filtered_data.call_traces), 1)
         self.assertTrue(all(trace.mean <= 8 for trace in filtered_data.call_traces))
-
-if __name__ == "__main__":
-    unittest.main()

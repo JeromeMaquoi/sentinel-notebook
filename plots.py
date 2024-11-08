@@ -1,4 +1,4 @@
-import networkx as nx
+""" import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
 import plotly.express as px
@@ -137,4 +137,4 @@ def createTsneFigure(df, coloredFeature, perplexity=30):
         hover_data=hover_data,
         color=df[coloredFeature], labels={'color':coloredFeature}
     )
-    fig.show()
+    fig.show() """

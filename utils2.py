@@ -1,13 +1,5 @@
-import pandas as pd
-import json
 from pymongo import MongoClient
-import matplotlib.pyplot as plt
 import numpy as np
-from scipy import stats
-import copy
-from scipy.stats import shapiro
-import statistics
-import plotly.express as px
 import call_trace
 import project_data
 
@@ -17,12 +9,6 @@ importlib.reload(project_data)
 from call_trace import CallTrace
 from project_data import ProjectData
 
-def main():
-    pass
-
-if __name__ == "__main__":
-    main()
-
 def get_all_data_from_one_repo(repo_name:str, min_nb_values:int, excluded_words:str=" ", excluded_first_ancestor_class:str=" "):
     all_data = aggregate_joular_node_entity_by_value(repo_name=repo_name, min_nb_values=min_nb_values, excluded_words=excluded_words, excluded_first_ancestor_class=excluded_first_ancestor_class)
     call_traces = [CallTrace(values=doc["values"], class_method_signature=doc["measurableElement"].get("classMethodSignature", ""), line_number=doc.get("lineNumber")) for doc in all_data]
@@ -31,10 +17,6 @@ def get_all_data_from_one_repo(repo_name:str, min_nb_values:int, excluded_words:
     project_data.filter_outliers().filter_non_normal()
     
     return project_data
-
-# ------------------------------------
-# DATABASE DATA FETCHING / AGGREGATION
-# ------------------------------------
 
 def aggregate_joular_node_entity_by_value(repo_name:str, min_nb_values:int, excluded_words:str=" ", excluded_first_ancestor_class:str=" "):
     print("-------------------------------------")
@@ -202,97 +184,7 @@ def aggregate_joular_node_entity_by_value(repo_name:str, min_nb_values:int, excl
     print()
     return result
 
-def get_call_trace_from_joular_node_entity_id(id:str):
-    client = MongoClient('mongodb://localhost:27017/')
-    db = client['sentinelBackend']
-    collection = db['joular_node_entity']
-
-    call_trace = []
-
-    doc = collection.find_one({"_id":id})
-    if (doc["ancestors"] != []):
-        ancestor_ids = doc["ancestors"]
-        cursor = collection.find({"_id": {"$in":ancestor_ids}},{"_id":1, "measurableElement.classMethodSignature":1, "lineNumber":1, "measurableElement.className":1, "measurableElement.methodName":1})
-        ancestors = sort_entities_by_id_list(doc["ancestors"], cursor)
-        for ancestor in ancestors:
-            call_trace.append(ancestor)
-            print(f'{ancestor["measurableElement"]["classMethodSignature"]} {ancestor["lineNumber"]}')
-    else:
-        print("There are no ancestors :/")
-    call_trace.append(doc)
-    print(doc["measurableElement"]["classMethodSignature"] + " " + str(doc["lineNumber"]))
-    print()
-    return call_trace
-
-def get_ck_metric_from_joular_node_entity(repo_name:str, class_name:str, method_name:str, name:str="fanout"):
-    client = MongoClient('mongodb://localhost:27017/')
-    db = client['sentinelBackend']
-    collection = db['ck_entity']
-    doc = collection.find_one({"commit.repository.name":repo_name, "measurableElement.className":class_name, "measurableElement.methodName":method_name, "name":name})
-    
-    if doc == None:
-        return 0
-    return doc["value"]
-
-
-def get_sum_fanout_of_call_trace(repo_name:str, call_trace):
-    sum_fanout = 0
-    for item in call_trace:
-        class_name = item["measurableElement"]["className"]
-        method_name = item["measurableElement"]["methodName"]
-        fanout = get_ck_metric_from_joular_node_entity(repo_name=repo_name, class_name=class_name, method_name=method_name, name="fanout")
-        sum_fanout += fanout
-
-    return sum_fanout
-
-
-
-# -------------
-# LISTS METHODS
-# -------------
-
-def sort_entities_by_id_list(id_list:list, cursor):
-    """
-    The ancestors of one entity are sorted from the most distant ancestor to the closest one. The first element of the list will be the farthest ancestor and the last element will be the direct parent.
-    """
-    documents_by_id = {doc['_id']: doc for doc in cursor}
-    return [documents_by_id[id] for id in id_list if id in documents_by_id]
-
-def create_dataframe_metric_energy(all_normal_data_without_outliers, repo_name:str):
-    data = []
-
-    for item in all_normal_data_without_outliers:
-        median = statistics.median(item["values"])
-        call_trace = get_call_trace_from_joular_node_entity_id(item["id"])
-        sum_fanout = get_sum_fanout_of_call_trace(repo_name, call_trace)
-
-        data.append({
-            'energy_consumption_median': median,
-            'fanout':sum_fanout,
-            'identifier': item["measurableElement"]["methodName"]
-        })
-    return pd.DataFrame(data)
-
-# --------------------------------
-# OUTLIERS AND NORMAL DISTRIBUTION
-# --------------------------------
-
 def remove_outliers_by_std(all_values):
     mean = np.mean(all_values)
     std_dev = np.std(all_values)
     return [x for x in all_values if (np.abs(mean - x) <= 3 * std_dev)]
-
-def mean_dict(data):
-    return [np.mean(d["values"]) for d in data]
-
-# ----
-# PLOT
-# ----
-
-def scatter_plot(df:pd.DataFrame):
-    fig = px.scatter(df, x='energy_consumption_median', y='fanout', hover_data=['identifier'],
-                     labels={'energy_consumption': 'Energy Consumption (J)', 'fanout': 'Fanout'},
-                     title='Interactive Scatter Plot of Energy Consumption vs Fanout')
-    
-    # Show plot
-    fig.show()
