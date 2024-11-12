@@ -40,4 +40,4 @@ class TestPlotter(unittest.TestCase):
 
         mock_save.assert_called_once()
         args, _ = mock_save.call_args
-        self.assertIn(save_path + ".jpg", args[0])
+        self.assertIn(save_path + ".pdf", args[0])

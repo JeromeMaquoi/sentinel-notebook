@@ -61,8 +61,8 @@ class Plotter:
         plt.show()
 
         if save_path:
-            fig_save, ax_save = plt.subplots(figsize=(3,4))
+            fig_save, ax_save = plt.subplots(figsize=(3,3))
             create_plot(ax_save, data=data, means=means, labels=labels)
 
-            plt.savefig("/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-notebook/plots/" + save_path + ".jpg", bbox_inches='tight', dpi=300)
+            plt.savefig("/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-notebook/plots/" + save_path + ".pdf", bbox_inches='tight', dpi=300)
             plt.close(fig_save)

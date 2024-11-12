@@ -1,6 +1,9 @@
 import numpy as np
 import copy
 from utils2 import *
+import plotter
+import importlib
+importlib.reload(plotter)
 from plotter import Plotter
 from scipy.stats import shapiro
 
