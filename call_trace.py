@@ -1,10 +1,10 @@
 import numpy as np
 
 class CallTrace:
-    def __init__(self, label, mean, std_dev, values):
+    def __init__(self, values, label=""):
         self.values = values
-        self.mean = mean
-        self.std_dev = std_dev
+        self.mean = np.mean(values)
+        self.std_dev = np.std(values)
         self.label = label
 
     def __str__(self):

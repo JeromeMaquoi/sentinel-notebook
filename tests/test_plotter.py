@@ -36,7 +36,7 @@ class TestPlotter(unittest.TestCase):
     @patch("matplotlib.pyplot.savefig")
     def test_violin_and_boxplot_save(self, mock_save):
         save_path = "test_plot"
-        Plotter.violin_and_boxplot(self.project_data, save_path=save_path)
+        Plotter.violin_and_boxplot(self.project_data, file_name=save_path)
 
         mock_save.assert_called_once()
         args, _ = mock_save.call_args

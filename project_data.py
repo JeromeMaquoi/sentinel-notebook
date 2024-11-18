@@ -7,7 +7,6 @@ importlib.reload(plotter)
 from plotter import Plotter
 from scipy.stats import shapiro
 import csv
-from collections import defaultdict
 from call_trace import CallTrace
 
 class ProjectData:
@@ -50,29 +49,25 @@ class ProjectData:
     def get_means(self):
         return [trace.mean for trace in self.call_traces]
     
-    def filter_highest(self, percentage=25):
+    def filter_highest(self, percentage=50):
         means = self.get_means()
         quantile = np.percentile(means, np.abs(100-percentage))
         filtered = [d for d,mean in zip(self.call_traces, means) if mean >= quantile]
         return ProjectData(self.project_name, filtered)
     
-    def filter_lowest(self, percentage=10):
+    def filter_lowest(self, percentage=50):
         means = self.get_means()
         quantile = np.percentile(means, percentage)
         filtered = [d for d,mean in zip(self.call_traces, means) if mean <= quantile]
         return ProjectData(self.project_name, filtered)
     
-    def plot_quantiles(self, highest:bool, save:bool, begin_label:int):
+    def plot_quantiles(self, highest:bool, save:bool):
         label_plot = f'{"Highest" if highest else "Lowest"} CT {self.project_name}' if save else None
-
-        # Assign labels to each CallTrace
-        for i, trace in enumerate(self.call_traces, start=begin_label):
-            trace.label = f'CT{i}'
 
         Plotter.violin_and_boxplot(
             project_data=self,
             ylabel="Energy Consumption (J)",
-            save_path=label_plot,
+            file_name=label_plot,
             bottom=0
         )
 
@@ -116,12 +111,10 @@ class ProjectData:
             for row in csv_reader:
                 if row["Project Name"] == project_name:
                     label = row["Label"]
-                    mean = float(row["Mean"])
-                    std_dev = float(row["Std-dev"])
                     values = list(map(float, row["Values"].split(";")))
 
                     # Create a CallTrace object and add it to the list
-                    call_trace = CallTrace(label=label, mean=mean, std_dev=std_dev, values=values)
+                    call_trace = CallTrace(label=label, values=values)
                     call_traces.append(call_trace)
 
         if call_traces:

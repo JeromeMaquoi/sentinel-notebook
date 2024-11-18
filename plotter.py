@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 
 class Plotter:
     @staticmethod
-    def violin_and_boxplot(project_data, ylabel="Energy Consumption (J)", save_path=None, bottom=None, height=5, width=8):
+    def violin_and_boxplot(project_data, ylabel="Energy Consumption (J)", file_name=None, bottom=None, height=5, width=8):
         """
         Create a combined violin and box plot for the given data.
         
@@ -60,9 +60,9 @@ class Plotter:
         plt.tight_layout()
         plt.show()
 
-        if save_path:
+        if file_name:
             fig_save, ax_save = plt.subplots(figsize=(3,3))
             create_plot(ax_save, data=data, means=means, labels=labels)
 
-            plt.savefig("/home/jerome/Documents/Assistant/Recherche/joular-scripts/sentinel-notebook/plots/" + save_path + ".pdf", bbox_inches='tight', dpi=300)
+            plt.savefig("plots/" + file_name + ".pdf", bbox_inches='tight', dpi=300)
             plt.close(fig_save)
