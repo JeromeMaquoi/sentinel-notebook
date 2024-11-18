@@ -6,6 +6,7 @@ import importlib
 importlib.reload(plotter)
 from plotter import Plotter
 from scipy.stats import shapiro
+import csv
 
 class ProjectData:
     def __init__(self, project_name:str, call_traces):
@@ -72,3 +73,23 @@ class ProjectData:
             save_path=label_plot,
             bottom=0
         )
+
+    def to_csv(self, file_path):
+        """
+        Export the project's call traces to a CSV file.
+
+        Parameters:
+        - file_path: Path to the output CSV file.
+        """
+        with open(file_path, mode='a', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            if file.tell() == 0:
+                writer.writerow(["Project Name", "Label", "Mean", "Std-dev", "Values"])
+
+            for trace in self.call_traces:
+                writer.writerow([
+                    self.project_name,
+                    trace.label,
+                    trace.mean,
+                    trace.std_dev,
+                    ";".join(map(str, trace.values))])
