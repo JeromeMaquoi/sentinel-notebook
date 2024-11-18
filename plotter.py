@@ -23,14 +23,12 @@ class Plotter:
                 showextrema=False
             )
 
-            # Customize violin plot aesthetics
             for pc in violins["bodies"]:
                 pc.set_facecolor('white')
                 pc.set_edgecolor('black')
                 pc.set_linewidth(0.6)
                 pc.set_alpha(1)
 
-            # Create the boxplot
             lineprops=dict(linewidth=0.5)
             medianprops=dict(color='black')
             ax.boxplot(
@@ -43,12 +41,11 @@ class Plotter:
 
             ax.scatter(range(1, len(data) + 1), means, color='black', marker="x", s=30, label='Mean', zorder=3)
 
-            # Customize plot style
             ax.spines['right'].set_visible(False)
             ax.spines['top'].set_visible(False)
             if labels:
                 ax.set_xticklabels(labels)
-            ax.set_ylabel(ylabel)  # Update ylabel as per your data
+            ax.set_ylabel(ylabel)
             if bottom != None:
                 ax.set_ylim(bottom=bottom)
 
@@ -66,3 +63,4 @@ class Plotter:
 
             plt.savefig("plots/" + file_name + ".pdf", bbox_inches='tight', dpi=300)
             plt.close(fig_save)
+            print(f"File 'plots/{file_name}.pdf' saved")
