@@ -7,6 +7,8 @@ importlib.reload(plotter)
 from plotter import Plotter
 from scipy.stats import shapiro
 import csv
+from collections import defaultdict
+from call_trace import CallTrace
 
 class ProjectData:
     def __init__(self, project_name:str, call_traces):
@@ -92,4 +94,39 @@ class ProjectData:
                     trace.label,
                     trace.mean,
                     trace.std_dev,
-                    ";".join(map(str, trace.values))])
+                    ";".join(map(str, trace.values))])       
+
+    @staticmethod
+    def import_for_project_from_csv(file_path: str, project_name: str):
+        """
+        Import project data from a CSV file for a specific project.
+        
+        Parameters:
+        - file_path: Path to the CSV file.
+        - project_name: Name of the project to import data for.
+        """
+        print(f"Importing data for project '{project_name}' from {file_path}...")
+
+        # List to store the call traces for the specified project
+        call_traces = []
+
+        with open(file_path, mode='r', encoding='utf-8') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+
+            for row in csv_reader:
+                if row["Project Name"] == project_name:
+                    label = row["Label"]
+                    mean = float(row["Mean"])
+                    std_dev = float(row["Std-dev"])
+                    values = list(map(float, row["Values"].split(";")))
+
+                    # Create a CallTrace object and add it to the list
+                    call_trace = CallTrace(label=label, mean=mean, std_dev=std_dev, values=values)
+                    call_traces.append(call_trace)
+
+        if call_traces:
+            # Return a ProjectData object with the collected call traces
+            return ProjectData(project_name=project_name, call_traces=call_traces)
+        else:
+            print(f"No data found for project '{project_name}'.")
+            return None

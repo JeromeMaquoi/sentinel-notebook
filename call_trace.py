@@ -1,20 +1,11 @@
 import numpy as np
 
 class CallTrace:
-    def __init__(self, values, class_method_signature="", line_number=None):
+    def __init__(self, label, mean, std_dev, values):
         self.values = values
-        self.class_method_signature = class_method_signature
-        self.line_number = line_number
-        self.median = np.median(values)
-        self.mean = np.mean(values)
-        self.std_dev = np.std(values)
-        self.label = ""
-
-    def set_values(self, values):
-        self.values = values
-        self.median = np.median(values)
-        self.mean = np.mean(values)
-        self.std_dev = np.std(values)
+        self.mean = mean
+        self.std_dev = std_dev
+        self.label = label
 
     def __str__(self):
-        return f"CallTrace(class_method_signature='{self.class_method_signature}', line_number={self.line_number}, median={self.median}, mean={self.mean}, values={self.values})"
+        return f"CallTrace(label={self.label}, mean={self.mean}, std-dev={self.std_dev}, values={self.values})"
