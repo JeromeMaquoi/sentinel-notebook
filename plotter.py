@@ -63,4 +63,4 @@ class Plotter:
 
             plt.savefig("plots/" + file_name + ".pdf", bbox_inches='tight', dpi=300)
             plt.close(fig_save)
-            print(f"File 'plots/{file_name}.pdf' saved")
+            print(f"File 'plots/{file_name}.pdf' saved\n\n")

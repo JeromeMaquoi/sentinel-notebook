@@ -1,11 +1,27 @@
 from plotter import Plotter
 import csv
 from call_trace import CallTrace
+import numpy as np
 
 class ProjectData:
     def __init__(self, project_name:str, call_traces):
         self.project_name = project_name
         self.call_traces = call_traces
+
+    def get_means(self):
+        return [trace.mean for trace in self.call_traces]
+    
+    def filter_highest(self, percentage=50):
+        means = self.get_means()
+        quantile = np.percentile(means, np.abs(100-percentage))
+        filtered = [d for d,mean in zip(self.call_traces, means) if mean >= quantile]
+        return ProjectData(self.project_name, filtered)
+    
+    def filter_lowest(self, percentage=50):
+        means = self.get_means()
+        quantile = np.percentile(means, percentage)
+        filtered = [d for d,mean in zip(self.call_traces, means) if mean <= quantile]
+        return ProjectData(self.project_name, filtered)
     
     def plot_quantiles(self, highest:bool, save:bool):
         label_plot = f'{"Highest" if highest else "Lowest"} CT {self.project_name}' if save else None
@@ -16,6 +32,10 @@ class ProjectData:
             file_name=label_plot,
             bottom=0
         )
+
+    def show_mean_and_std_dev(self):
+        for trace in self.call_traces:
+            print(f"{trace.label} : mean={trace.mean}, std-dev={trace.std_dev}")
     
 
     @staticmethod

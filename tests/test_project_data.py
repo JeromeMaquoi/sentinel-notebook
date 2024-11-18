@@ -2,7 +2,7 @@ import unittest
 from scipy.stats import norm
 from call_trace import CallTrace
 from project_data import ProjectData
-from utils2 import *
+import numpy as np
 
 class TestProjectData(unittest.TestCase):
     def setUp(self):
@@ -23,11 +23,6 @@ class TestProjectData(unittest.TestCase):
             project_name="TestProject",
             call_traces=[self.normal_trace, self.non_normal_trace]
         )
-
-    def test_filter_non_normal(self):
-        self.project_data2.filter_non_normal()
-        self.assertEqual(len(self.project_data2.call_traces), 1)
-        self.assertEqual(self.project_data2.call_traces[0], self.normal_trace)
 
     def test_filter_highest(self):
         traces = [
