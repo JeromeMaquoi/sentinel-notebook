@@ -61,6 +61,6 @@ class Plotter:
             fig_save, ax_save = plt.subplots(figsize=(3,3))
             create_plot(ax_save, data=data, means=means, labels=labels)
 
-            plt.savefig("plots/" + file_name + ".pdf", bbox_inches='tight', dpi=300)
+            plt.savefig("../plots/" + file_name + ".pdf", bbox_inches='tight', dpi=300)
             plt.close(fig_save)
             print(f"File 'plots/{file_name}.pdf' saved\n\n")
