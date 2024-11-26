@@ -22,3 +22,59 @@ This replication package is structured as follows:
 1. Clone this repository
 2. Install the requirements from `scripts/requirements.txt` in a virtual environment
 3. Open and execute the `scripts/analysis.ipynb` notebook in an IDE
+
+## Example of a call trace analysis
+
+Here is an example of Java stacktrace from the Spoon project, with each frame of the stacktrace associated to its line number. The association of this stacktrace with an energy consumption form a _call trace_.
+
+```
+spoon.[...].jdt.JDTBasedSpoonCompilerTest.testOrderCompilationUnits 35
+spoon.[...].jdt.JDTBasedSpoonCompiler.buildUnits 418
+spoon.[...].jdt.JDTBatchCompiler.getUnits 282
+spoon.[...].jdt.TreeBuilderCompiler.buildUnits 82
+```
+
+Upon examining the second line of the call trace, _spoon.[...].jdt.JDTBasedSpoonCompiler.buildUnits 418_, we identify that the instruction of interest is the method named _buildUnits_. To better understand the context of this method, let's review the source code of this method.
+
+```java
+/**
+ * Build the CompilationUnit found in the source folder
+ * @param jdtBuilder The instance of JDTBuilder to prepare the right JDT arguments
+ * @param sourcesFolder The source folder
+ * @param classpath The complete classpath
+ * @param debugMessagePrefix Useful to help debugging
+ * @return All compilationUnitDeclaration from JDT found in source folder
+ */
+protected CompilationUnitDeclaration[] buildUnits(JDTBuilder jdtBuilder, SpoonFolder sourcesFolder, String[] classpath, String debugMessagePrefix) {
+    List<SpoonFile> sourceFiles = Collections.unmodifiableList(sourcesFolder.getAllJavaFiles());
+    if (sourceFiles.isEmpty()) {
+        return EMPTY_RESULT;
+    }
+
+    JDTBatchCompiler batchCompiler = createBatchCompiler(new FileCompilerConfig(sourceFiles));
+
+    String[] args;
+    if (jdtBuilder == null) {
+        ClasspathOptions classpathOptions = new ClasspathOptions().encoding(this.getEnvironment().getEncoding().displayName()).classpath(classpath);
+        ComplianceOptions complianceOptions = new ComplianceOptions().compliance(javaCompliance);
+        if (factory.getEnvironment().isPreviewFeaturesEnabled()) {
+            complianceOptions.enablePreview();
+        }
+        AdvancedOptions advancedOptions = new AdvancedOptions().preserveUnusedVars().continueExecution().enableJavadoc();
+        SourceOptions sourceOptions = new SourceOptions().sources(sourceFiles);
+        args = new JDTBuilderImpl()
+                .classpathOptions(classpathOptions)
+                .complianceOptions(complianceOptions)
+                .advancedOptions(advancedOptions)
+                .sources(sourceOptions) // no sources, handled by the JDTBatchCompiler
+                .build();
+    } else {
+        args = jdtBuilder.build();
+    }
+
+    getFactory().getEnvironment().debugMessage(debugMessagePrefix + "build args: " + Arrays.toString(args));
+    batchCompiler.configure(args);
+
+    return batchCompiler.getUnits();
+}
+```
