@@ -5,3 +5,4 @@ __pycache__/
 /plots
 .vscode/settings.json
 .coverage
+.venv

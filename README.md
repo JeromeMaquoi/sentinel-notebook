@@ -20,8 +20,10 @@ This replication package is structured as follows:
 ## Getting started
 
 1. Clone this repository
-2. Install the requirements from `scripts/requirements.txt` in a virtual environment
-3. Open and execute the `scripts/analysis.ipynb` notebook in an IDE
+2. Go to the root of the repository
+3. Create a new virtual environment: `python3 -m venv .venv`
+4. Activate the environment: (for Linux users) `source .venv/bin/activate`
+5. Open and execute the `scripts/analysis.ipynb` notebook in an IDE like VSCode
 
 ## Example of a call trace analysis
 
