@@ -19,11 +19,13 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
+        working-directory: ./scripts
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Run tests with coverage
+        working-directory: ./scripts
         run: |
           coverage run --source=. -m unittest discover -s tests
           coverage xml  # Generate coverage report in XML format
