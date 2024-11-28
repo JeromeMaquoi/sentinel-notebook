@@ -26,9 +26,9 @@ This replication package is structured as follows:
 5. Open and execute the `scripts/analysis.ipynb` notebook in an IDE like VSCode
 6. Compare the printed results of the execution to the `data.csv` file that contains the mean and standard deviation for each call trace
 
-## Example of a call trace analysis
+## Example of a manual call trace analysis
 
-Here is an example of Java stack trace from the Spoon project, with each frame of the stack trace associated to its line number. The association of this stack trace with an energy consumption forms a _call trace_. In this case, the analyzed call trace is CT13 from the paper.
+Due to space constraints, we were unable to include an example of a call trace manual analysis in the paper. This section presents an example from the Spoon project, featuring a stack trace with each frame linked to its corresponding line number. The association of this stack trace with an energy consumption forms a _call trace_. In this case, the analyzed call trace is CT13 from the paper.
 
 ```
 spoon.[...].jdt.JDTBasedSpoonCompilerTest.testOrderCompilationUnits 35
@@ -96,7 +96,7 @@ public CompilationUnitDeclaration[] getUnits() {
 }
 ```
 
-The line 282 of the `getUnits` method calls the method `buildUnits`, which corresponds to the fourth frame: _spoon.[...].jdt.TreeBuilderCompiler.buildUnits 82_. Please note that this method shares the same name as the second frame but is sourced from a different class. The source code for this method is provided below. We have categorized this method as a **builder** because it modifies the internal state of the `sourceUnits` parameters before invoking another method, `beginToCompile`.
+The line 282 of the `getUnits` method calls the method `buildUnits`, which corresponds to the fourth frame: _spoon.[...].jdt.TreeBuilderCompiler.buildUnits 82_. Please note that this method shares the same name as the second frame but is sourced from a different class. The source code for this method is provided below. We have categorized this method as a **builder** because it modifies the internal state of the `sourceUnits` parameters before invoking another method, `beginToCompile`. This last method, `beginToCompile`, comes from the JDT compiler. As it handles compilation, we classified its role as **lifecycle manager**.
 
 ```java
 protected CompilationUnitDeclaration[] buildUnits(CompilationUnit[] sourceUnits) {
@@ -108,6 +108,4 @@ protected CompilationUnitDeclaration[] buildUnits(CompilationUnit[] sourceUnits)
 }
 ```
 
-This last method, `beginToCompile`, comes from the JDT compiler. As it handles compilation, we classified its role as **lifecycle manager**.
-
-Following the analysis of the stack trace, we identified 2 builders, 1 finder and 1 lifecycle manager for CT13, as detailed in Table IV of the paper.
+Following the analysis of the stack trace, we identified 2 builders, 1 finder and 1 lifecycle manager for CT13, as detailed in Table IV of the paper. Each stack trace discussed in the paper is analyzed through the same process.
