@@ -1,6 +1,6 @@
 # ICST 2025 replication package
 
-This repository contains the replication package of the paper **Energy Codesumption, Source Code Level Analysis of Energy Consumption from Test Execution**, submitted at the 18th IEEE International Conference on Software Testing, Verification and Validation (ICST) 2025.
+This repository contains the replication package of the paper **Energy Codesumption, Leveraging Test Execution for Source Code Energy Consumption Analysis**, submitted at the 18th IEEE International Conference on Software Testing, Verification and Validation (ICST) 2025.
 
 ## Structure of the replication package
 
@@ -24,10 +24,11 @@ This replication package is structured as follows:
 3. Create a new virtual environment: `python3 -m venv .venv`
 4. Activate the environment: (for Linux users) `source .venv/bin/activate`
 5. Open and execute the `scripts/analysis.ipynb` notebook in an IDE like VSCode
+6. Compare the printed results of the execution to the `data.csv` file that contains the mean and standard deviation for each call trace
 
 ## Example of a call trace analysis
 
-Here is an example of Java stack trace from the Spoon project, with each frame of the stacktrace associated to its line number. The association of this stacktrace with an energy consumption form a _call trace_.
+Here is an example of Java stack trace from the Spoon project, with each frame of the stack trace associated to its line number. The association of this stack trace with an energy consumption forms a _call trace_. In this case, the analyzed call trace is CT13 from the paper.
 
 ```
 spoon.[...].jdt.JDTBasedSpoonCompilerTest.testOrderCompilationUnits 35
@@ -36,7 +37,7 @@ spoon.[...].jdt.JDTBatchCompiler.getUnits 282
 spoon.[...].jdt.TreeBuilderCompiler.buildUnits 82
 ```
 
-Let's break down the stack trace above frame by frame. The first frame _spoon.[...].jdt.JDTBasedSpoonCompilerTest.testOrderCompilationUnits 35_ calls the method `testOrderCompilationUnits` at the line 35. For greater clarity, for each of the frame discussed in this example, only the lines we're interested in, or allowing us to understand the frame, will be shown.
+Let's break down the stack trace above frame by frame. The first frame _spoon.[...].jdt.JDTBasedSpoonCompilerTest.testOrderCompilationUnits 35_ calls the method `testOrderCompilationUnits` at the line 35. To enhance clarity, the source code for each frame discussed in this example will be provided, focusing solely on the relevant lines necessary for understanding each frame.
 
 ```java
 @Test
@@ -49,7 +50,7 @@ public void testOrderCompilationUnits() {
 }
 ```
 
-The line 35 of the `testOrderCompilationUnits` method calls a method named `buildUnits`, which corresponds to the second frame: _spoon.[...].jdt.JDTBasedSpoonCompiler.buildUnits 418_. When we look at the source code of this method.
+The line 35 of the `testOrderCompilationUnits` method calls a method named `buildUnits`, which corresponds to the second frame: _spoon.[...].jdt.JDTBasedSpoonCompiler.buildUnits 418_. Upon reviewing the source code of the method below, it appears that `buildUnits` functions as a **builder** method. It is responsible for creating and modifying the internal state of a variable, subsequently invoking the `getUnits` method on that variable to return the result.
 
 ```java
 /**
@@ -63,10 +64,50 @@ The line 35 of the `testOrderCompilationUnits` method calls a method named `buil
 protected CompilationUnitDeclaration[] buildUnits(JDTBuilder jdtBuilder, SpoonFolder sourcesFolder, String[] classpath, String debugMessagePrefix) {
     // Rest of the code
 
-    JDTBatchCompiler batchCompiler = createBatchCompiler(new FileCompilerConfig(sourceFiles));
+    JDTBatchCompiler batchCompiler = createBatchCompiler(new FileCompilerConfig(sourceFiles)); // Creation of an object on which the next method will be called
+
+    // Rest of the code that modifies the batchCompiler variable
+
+    return batchCompiler.getUnits(); // Line 418
+}
+```
+
+The line 418 of the source code above calls the method `getUnits`, which corresponds to the third frame: _spoon.[...].jdt.JDTBatchCompiler.getUnits 282_. Again, upon reviewing the source code of this method, we can better understand its role. Based on the documentation, we have classified this method as a **finder**, as its primary purpose is to search for and return a list of objects.
+
+```java
+/** Calls JDT to retrieve the list of compilation unit declarations.
+ * Depends on the actual implementation of {@link #getCompilationUnits()}
+ */
+public CompilationUnitDeclaration[] getUnits() {
+    // Rest of the code
+
+    TreeBuilderCompiler treeBuilderCompiler = new TreeBuilderCompiler(
+        environment, errorHandlingPolicy, compilerOptions, this.jdtCompiler.requestor, problemFactory,
+        this.out, jdtCompiler.getEnvironment().getIgnoreSyntaxErrors(), jdtCompiler.getEnvironment().getLevel(),
+        new CompilationProgress() {/*...*/});
 
     // Rest of the code
 
-    return batchCompiler.getUnits();
+    final CompilationUnitDeclaration[] result = treeBuilderCompiler.buildUnits(getCompilationUnits()); // Line 282
+
+    // Rest of the code
+
+    return result;
 }
 ```
+
+The line 282 of the `getUnits` method calls the method `buildUnits`, which corresponds to the fourth frame: _spoon.[...].jdt.TreeBuilderCompiler.buildUnits 82_. Be careful that this method has the same name as the second frame but comes from another package! The source code of this method is shown below. We decided to classify this method as a **builder**, as it modifies the internal state of the `sourceUnits` parameters and then use it to call another method, `beginToCompile`.
+
+```java
+protected CompilationUnitDeclaration[] buildUnits(CompilationUnit[] sourceUnits) {
+    // Rest of the code that modifies the state of "sourceUnits"
+
+    beginToCompile(sourceUnits); // Line 82
+
+    // Rest of the code
+}
+```
+
+This last method, `beginToCompile`, comes from the JDT compiler. As it handles compilation, we classified its role as **lifecycle manager**.
+
+For the whole stack trace, we have then 2 builders, 1 finder and 1 lifecycle manager.
