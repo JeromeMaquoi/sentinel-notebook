@@ -72,7 +72,7 @@ protected CompilationUnitDeclaration[] buildUnits(JDTBuilder jdtBuilder, SpoonFo
 }
 ```
 
-The line 418 of the source code above calls the method `getUnits`, which corresponds to the third frame: _spoon.[...].jdt.JDTBatchCompiler.getUnits 282_. Again, upon reviewing the source code of this method, we can better understand its role. Based on the documentation, we have classified this method as a **finder**, as its primary purpose is to search for and return a list of objects.
+The line 418 of the source code above calls the method `getUnits`, which corresponds to the third frame: _spoon.[...].jdt.JDTBatchCompiler.getUnits 282_. Upon reviewing the source code of this method, we can better understand its role. We have classified this method as a **finder**, as its primary purpose is to search for and return a list of objects from a data structure.
 
 ```java
 /** Calls JDT to retrieve the list of compilation unit declarations.
@@ -96,7 +96,7 @@ public CompilationUnitDeclaration[] getUnits() {
 }
 ```
 
-The line 282 of the `getUnits` method calls the method `buildUnits`, which corresponds to the fourth frame: _spoon.[...].jdt.TreeBuilderCompiler.buildUnits 82_. Be careful that this method has the same name as the second frame but comes from another package! The source code of this method is shown below. We decided to classify this method as a **builder**, as it modifies the internal state of the `sourceUnits` parameters and then use it to call another method, `beginToCompile`.
+The line 282 of the `getUnits` method calls the method `buildUnits`, which corresponds to the fourth frame: _spoon.[...].jdt.TreeBuilderCompiler.buildUnits 82_. Please note that this method shares the same name as the second frame but is sourced from a different class. The source code for this method is provided below. We have categorized this method as a **builder** because it modifies the internal state of the `sourceUnits` parameters before invoking another method, `beginToCompile`.
 
 ```java
 protected CompilationUnitDeclaration[] buildUnits(CompilationUnit[] sourceUnits) {
@@ -110,4 +110,4 @@ protected CompilationUnitDeclaration[] buildUnits(CompilationUnit[] sourceUnits)
 
 This last method, `beginToCompile`, comes from the JDT compiler. As it handles compilation, we classified its role as **lifecycle manager**.
 
-For the whole stack trace, we have then 2 builders, 1 finder and 1 lifecycle manager.
+Following the analysis of the stack trace, we identified 2 builders, 1 finder and 1 lifecycle manager for CT13, as detailed in Table IV of the paper.
