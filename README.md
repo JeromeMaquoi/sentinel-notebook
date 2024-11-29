@@ -26,9 +26,93 @@ This replication package is structured as follows:
 5. Open and execute the `scripts/analysis.ipynb` notebook in an IDE like VSCode
 6. Compare the printed results of the execution to the `data.csv` file that contains the mean and standard deviation for each call trace
 
-## Example of a manual call trace analysis
+## Examples of manual call trace analysis
 
-Due to space constraints, we were unable to include an example of a call trace manual analysis in the paper. This section presents an example from the Spoon project, featuring a stack trace with each frame linked to its corresponding line number. The association of this stack trace with an energy consumption forms a _call trace_. In this case, the analyzed call trace is CT13 from the paper.
+Due to space constraints, we were unable to include exampls of call trace manual analysis in the paper. This section presents two examples, featuring for each a stack trace with each frame linked to its corresponding line number. The association of this stack trace with an energy consumption forms a _call trace_. To enhance clarity, the source code for each frame discussed in the examples will be provided, focusing solely on the relevant lines necessary for understanding each frame.
+
+### Call trace with constructor
+
+For this first example, let's focus on the stack trace below, corresponding to CT1 in the paper.
+
+```
+org.[...].propertyResolverIsOptimizedForConfigurationProperties 59
+org.[...].ApplicationEnvironmentTests.createEnvironment 30
+org.[...].ApplicationEnvironment.<init> 29
+```
+
+#### Identification of the method roles
+
+Let's break down this stack trace frame by frame. The first frame is _org.[...].propertyResolverIsOptimizedForConfigurationProperties 59_ and calls the method `propertyResolver IsOptimizedForConfigurationProperties` at the line 59.
+
+```java
+@Test
+void propertyResolverIsOptimizedForConfigurationProperties() {
+    StandardEnvironment environment = createEnvironment(); // Line 59
+    ConfigurablePropertyResolver expected = ConfigurationPropertySources
+        .createPropertyResolver(new MutablePropertySources());
+    assertThat(environment).extracting("propertyResolver").hasSameClassAs(expected);
+}
+```
+
+The line 59 of the method calls a method named `createEnvironment`, which corresponds to the second frame of the stack trace: _org.[...].ApplicationEnvironmentTests.createEnvironment 30_. Upon reviewing the source code of this method, shown below, it appreas that `createEnvironment` is a **factory**, because it is responsible for the creation of a new object that is returned and used elsewhere.
+
+```java
+@Override
+protected StandardEnvironment createEnvironment() {
+    return new ApplicationEnvironment(); // Line 30
+}
+```
+
+The line 30 of `createEnvironment` calls a **constructor** of the class `ApplicationEnvironment`, which corresponds to the third frame of the stack trace: _org.[...].ApplicationEnvironment.<init> 29_.
+
+```java
+/**
+ * {@link StandardEnvironment} for typical use in a typical {@link SpringApplication}.
+ *
+ * @author Phillip Webb
+ */
+class ApplicationEnvironment extends StandardEnvironment {  // Line 29
+	 //...
+}
+```
+
+The class `ApplicationEnvironment` has no constructor, so it will call the parent from the `StandardEnvironment` class, another **constructor**, which comes from the compiler. Following the manual analysis of this stack trace, we identified 1 factory and 2 constructor calls.
+
+#### Identification of the number of constructor attributes
+
+To compute the number of attributes of the constructors, let's dig a little more. `StandardEnvironment` has no attribute and extends `AbstractEnvironment`, which is shown below.
+
+```java
+public abstract class AbstractEnvironment implements ConfigurableEnvironment {
+    public static final String IGNORE_GETENV_PROPERTY_NAME = "spring.getenv.ignore";
+    public static final String ACTIVE_PROFILES_PROPERTY_NAME = "spring.profiles.active";
+    public static final String DEFAULT_PROFILES_PROPERTY_NAME = "spring.profiles.default";
+    protected static final String RESERVED_DEFAULT_PROFILE_NAME = "default";
+    protected final Log logger;
+    private final Set<String> activeProfiles;
+    private final Set<String> defaultProfiles;
+    private final MutablePropertySources propertySources;
+    private final ConfigurablePropertyResolver propertyResolver;
+
+    public AbstractEnvironment() {
+        this(new MutablePropertySources());
+    }
+
+    protected AbstractEnvironment(MutablePropertySources propertySources) {
+        this.logger = LogFactory.getLog(this.getClass());
+        this.activeProfiles = new LinkedHashSet();
+        this.defaultProfiles = new LinkedHashSet(this.getReservedDefaultProfiles());
+        this.propertySources = propertySources;
+        this.propertyResolver = this.createPropertyResolver(propertySources);
+        this.customizePropertySources(propertySources);
+    }
+    // Rest of the code
+}
+```
+
+### Call trace without constructor
+
+In this case, the analyzed call trace is CT13 from the paper.
 
 ```
 spoon.[...].jdt.JDTBasedSpoonCompilerTest.testOrderCompilationUnits 35
@@ -37,7 +121,7 @@ spoon.[...].jdt.JDTBatchCompiler.getUnits 282
 spoon.[...].jdt.TreeBuilderCompiler.buildUnits 82
 ```
 
-Let's break down the stack trace above frame by frame. The first frame _spoon.[...].jdt.JDTBasedSpoonCompilerTest.testOrderCompilationUnits 35_ calls the method `testOrderCompilationUnits` at the line 35. To enhance clarity, the source code for each frame discussed in this example will be provided, focusing solely on the relevant lines necessary for understanding each frame.
+Let's break down the stack trace above frame by frame. The first frame _spoon.[...].jdt.JDTBasedSpoonCompilerTest.testOrderCompilationUnits 35_ calls the method `testOrderCompilationUnits` at the line 35.
 
 ```java
 @Test
