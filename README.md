@@ -1,6 +1,6 @@
-# ICST 2025 replication package
+# DevOpsSustain 2025 replication package
 
-This repository contains the replication package of the paper **Energy Codesumption, Leveraging Test Execution for Source Code Energy Consumption Analysis**, submitted at the 18th IEEE International Conference on Software Testing, Verification and Validation (ICST) 2025.
+This repository contains the replication package of the paper **Energy Codesumption, Leveraging Test Execution for Source Code Energy Consumption Analysis**, submitted at the First International Workshop on DevOps for Sustainability, co-located with FSE 2025.
 
 ## Structure of the replication package
 
